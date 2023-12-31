@@ -1,33 +1,50 @@
 {
-  "name": "juanvladimir13/pg_database",
-  "description": "Conexion PDO",
-  "type": "library",
-  "license": "MIT",
-  "version": "0.1.3",
-  "autoload": {
-    "psr-4": {
-      "PGDatabase\\": "src/"
+    "name": "juanvladimir13/postgres-database",
+    "description": "Conexion native to postgres",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://juanvladimir13.web.app/",
+    "authors": [
+        {
+            "name": "Juan Vladimir",
+            "email": "juanvladimir13@gmail.com",
+            "homepage": "https://juanvladimir13.web.app/"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "~7.1|~8.3",
+        "ext-pgsql": "*"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10",
+        "vimeo/psalm": "^5.18",
+        "squizlabs/php_codesniffer": "^3.8",
+        "friendsofphp/php-cs-fixer": "^3.45"
+    },
+    "autoload": {
+        "psr-4": {
+            "PGDatabase\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "prepend-autoloader": false,
+        "platform": {
+            "php": "7.1"
+        }
+    },
+    "scripts": {
+        "phpstan": "phpstan analyse --xdebug -c phpstan.neon",
+        "psalm": "psalm src",
+        "phpcs": "phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 --report=summary src",
+        "phpcs-detail": "phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 src",
+        "phpcs-fixer": "php-cs-fixer fix src --rules=@PSR12"
     }
-  },
-  "authors": [
-    {
-      "name": "Juan Vladimir",
-      "email": "juanvladimir13@gmail.com"
-    }
-  ],
-  "minimum-stability": "dev",
-  "require": {
-    "php": ">=7.1",
-    "ext-pgsql": "*"
-  },
-  "config": {
-    "optimize-autoloader": true,
-    "prepend-autoloader": false,
-    "platform": {
-      "php": "7.1"
-    }
-  },
-  "scripts": {
-    "phpstan": "phpstan analyse --xdebug -c phpstan.neon"
-  }
 }
