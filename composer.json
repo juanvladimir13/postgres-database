@@ -42,9 +42,9 @@
     },
     "scripts": {
         "phpstan": "phpstan analyse --xdebug -c phpstan.neon",
-        "psalm": "psalm src",
-        "phpcs": "phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 --report=summary src",
-        "phpcs-detail": "phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 src",
-        "phpcs-fixer": "php-cs-fixer fix src --rules=@PSR12"
+        "psalm": "vendor/bin/psalm src",
+        "phpcs": "vendor/bin/phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 --report=summary src",
+        "phpcs-detail": "vendor/bin/phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 src",
+        "phpcs-fixer": "vendor/bin/php-cs-fixer fix src --rules=@PSR12"
     }
 }
