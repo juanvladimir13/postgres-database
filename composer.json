@@ -41,7 +41,7 @@
         }
     },
     "scripts": {
-        "phpstan": "phpstan analyse --xdebug -c phpstan.neon",
+        "phpstan": "vendor/bin/phpstan analyse --xdebug -c phpstan.neon",
         "psalm": "vendor/bin/psalm src",
         "phpcs": "vendor/bin/phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 --report=summary src",
         "phpcs-detail": "vendor/bin/phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 src",
