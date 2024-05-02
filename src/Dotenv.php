@@ -23,10 +23,12 @@ class Dotenv
         ];
 
         try {
-            if (!file_exists('../.env'))
+            $parentEnv = file_exists('../.env');
+            $brotherEnv = file_exists('./.env');
+            if (!($parentEnv || $brotherEnv))
                 throw new \Exception('File not found');
 
-            $dataEnvironment = include '../.env';
+            $dataEnvironment = $parentEnv ? include '../.env' : include './.env';
             return array_merge($config, $dataEnvironment);
         } catch (\Exception $e) {
             return $config;
