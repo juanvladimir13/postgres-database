@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @author juanvladimir13 <juanvladimir13@gmail.com>
+ * @author juanvladimir13
  * @see https://github.com/juanvladimir13
  */
 
@@ -11,33 +11,80 @@ namespace PGDatabase;
 
 class Dotenv
 {
-
     private static function load(): array
     {
-        $config = [
+        if (getenv('DB_SECURITY_ENVIROMENT') === 'true') {
+            return [
+                'DB_DATABASE' => getenv('DB_DATABASE') ?: 'postgres',
+                'DB_PASSWORD' => getenv('DB_PASSWORD') ?: '',
+                'DB_HOST' => getenv('DB_HOST') ?: 'localhost',
+                'DB_PORT' => getenv('DB_PORT') ?: 5432,
+                'DB_USERNAME' => getenv('DB_USERNAME') ?: 'postgres',
+            ];
+        }
+
+        $defaults = [
             'DB_DATABASE' => 'postgres',
             'DB_PASSWORD' => 'postgres',
-            'DB_HOST' => '127.0.0.1',
+            'DB_HOST' => 'localhost',
             'DB_PORT' => 5432,
-            'DB_USERNAME' => 'postgres'
+            'DB_USERNAME' => 'postgres',
         ];
 
         try {
-            $parentEnv = file_exists('../.env');
-            $brotherEnv = file_exists('./.env');
-            if (!($parentEnv || $brotherEnv))
-                throw new \Exception('File not found');
+            $paths = ['../.env', './.env'];
 
-            $dataEnvironment = $parentEnv ? include '../.env' : include './.env';
-            return array_merge($config, $dataEnvironment);
-        } catch (\Exception $e) {
-            return $config;
+            $envFile = null;
+            foreach ($paths as $path) {
+                if (is_readable($path)) {
+                    $envFile = $path;
+                    break;
+                }
+            }
+
+            if ($envFile === null) {
+                return $defaults;
+            }
+
+            $dataEnvironment = self::parseDotenv($envFile);
+            return array_merge($defaults, $dataEnvironment);
+
+        } catch (\Throwable $e) {
+            return $defaults;
         }
+    }
+
+    private static function parseDotenv(string $file): array
+    {
+        $vars = [];
+        $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+        foreach ($lines as $line) {
+
+            if (trim($line)[0] === '#') {
+                continue;
+            }
+
+            if (strpos($line, '=') !== false) {
+                [$key, $value] = explode('=', $line, 2);
+                $vars[trim($key)] = trim($value, " \t\n\r\0\x0B\"'");
+            }
+        }
+
+        return $vars;
     }
 
     public static function connection_string_pg(): string
     {
-        list('DB_HOST' => $host, 'DB_PORT' => $port, 'DB_DATABASE' => $database, 'DB_USERNAME' => $username, 'DB_PASSWORD' => $password) = self::load();
-        return "host=$host port=$port dbname=$database user=$username password=$password";
+        $config = self::load();
+
+        return sprintf(
+            "host=%s port=%s dbname=%s user=%s password=%s",
+            $config['DB_HOST'],
+            $config['DB_PORT'],
+            $config['DB_DATABASE'],
+            $config['DB_USERNAME'],
+            $config['DB_PASSWORD']
+        );
     }
 }
