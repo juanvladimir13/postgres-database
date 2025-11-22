@@ -13,13 +13,13 @@ class Dotenv
 {
     private static function load(): array
     {
-        if (getenv('DB_SECURITY_ENVIROMENT') === 'true') {
+        if (\getenv('DB_SECURITY_ENVIROMENT') === 'true') {
             return [
-                'DB_DATABASE' => getenv('DB_DATABASE') ?: 'postgres',
-                'DB_PASSWORD' => getenv('DB_PASSWORD') ?: '',
-                'DB_HOST' => getenv('DB_HOST') ?: 'localhost',
-                'DB_PORT' => getenv('DB_PORT') ?: 5432,
-                'DB_USERNAME' => getenv('DB_USERNAME') ?: 'postgres',
+                'DB_DATABASE' => \getenv('DB_DATABASE') ?: 'postgres',
+                'DB_PASSWORD' => \getenv('DB_PASSWORD') ?: '',
+                'DB_HOST' => \getenv('DB_HOST') ?: 'localhost',
+                'DB_PORT' => \getenv('DB_PORT') ?: 5432,
+                'DB_USERNAME' => \getenv('DB_USERNAME') ?: 'postgres',
             ];
         }
 
@@ -36,7 +36,7 @@ class Dotenv
 
             $envFile = null;
             foreach ($paths as $path) {
-                if (is_readable($path)) {
+                if (\is_readable($path)) {
                     $envFile = $path;
                     break;
                 }
@@ -47,7 +47,7 @@ class Dotenv
             }
 
             $dataEnvironment = self::parseDotenv($envFile);
-            return array_merge($defaults, $dataEnvironment);
+            return \array_merge($defaults, $dataEnvironment);
 
         } catch (\Throwable $e) {
             return $defaults;
@@ -57,17 +57,17 @@ class Dotenv
     private static function parseDotenv(string $file): array
     {
         $vars = [];
-        $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $lines = \file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         foreach ($lines as $line) {
 
-            if (trim($line)[0] === '#') {
+            if (\trim($line)[0] === '#') {
                 continue;
             }
 
-            if (strpos($line, '=') !== false) {
-                [$key, $value] = explode('=', $line, 2);
-                $vars[trim($key)] = trim($value, " \t\n\r\0\x0B\"'");
+            if (\strpos($line, '=') !== false) {
+                [$key, $value] = \explode('=', $line, 2);
+                $vars[\trim($key)] = \trim($value, " \t\n\r\0\x0B\"'");
             }
         }
 
@@ -78,7 +78,7 @@ class Dotenv
     {
         $config = self::load();
 
-        return sprintf(
+        return \sprintf(
             "host=%s port=%s dbname=%s user=%s password=%s",
             $config['DB_HOST'],
             $config['DB_PORT'],
