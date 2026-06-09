@@ -14,3 +14,5 @@ composer.lock
 .php-cs-fixer.cache
 /logs
 /tmp
+.phpunit.result.cache
+.env

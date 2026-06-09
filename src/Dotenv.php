@@ -60,8 +60,9 @@ class Dotenv
         $lines = \file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         foreach ($lines as $line) {
+            $line = \trim($line);
 
-            if (\trim($line)[0] === '#') {
+            if ($line === '' || $line[0] === '#') {
                 continue;
             }
 

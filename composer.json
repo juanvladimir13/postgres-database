@@ -14,14 +14,15 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "~7.4|~8.3",
+        "php": "^7.4|^8.3",
         "ext-pgsql": "*"
     },
     "require-dev": {
         "phpstan/phpstan": "^1.10",
         "vimeo/psalm": "^5.18",
         "squizlabs/php_codesniffer": "^3.8",
-        "friendsofphp/php-cs-fixer": "^3.45"
+        "friendsofphp/php-cs-fixer": "^3.45",
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
@@ -45,6 +46,7 @@
         "psalm": "vendor/bin/psalm src",
         "phpcs": "vendor/bin/phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 --report=summary src",
         "phpcs-detail": "vendor/bin/phpcs --colors --standard=PSR12 --severity=1 --tab-width=4 src",
-        "phpcs-fixer": "vendor/bin/php-cs-fixer fix src --rules=@PSR12"
+        "phpcs-fixer": "vendor/bin/php-cs-fixer fix src --rules=@PSR12",
+        "test": "vendor/bin/phpunit"
     }
 }

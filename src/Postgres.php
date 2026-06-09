@@ -26,10 +26,6 @@ class Postgres
             self::$database = new self();
         }
 
-        if (!self::$database->connection) {
-            self::$database = new self();
-        }
-
         return self::$database;
     }
 
@@ -45,9 +41,10 @@ class Postgres
      */
     public static function fetchAll(string $query, int $result_type = PGSQL_ASSOC): array
     {
-        if (!self::getInstance()->isConnected()) return [];
+        $instance = self::getInstance();
+        if ($instance->connection === false) return [];
 
-        $resource = \pg_query(self::getInstance()->connection, $query);
+        $resource = \pg_query($instance->connection, $query);
         if (!$resource) return [];
 
         $rows = \pg_fetch_all($resource, $result_type);
@@ -64,9 +61,10 @@ class Postgres
      */
     public static function fetchAllParams(string $query, array $params = [], int $result_type = PGSQL_ASSOC): array
     {
-        if (!self::getInstance()->isConnected()) return [];
+        $instance = self::getInstance();
+        if ($instance->connection === false) return [];
 
-        $resource = \pg_query_params(self::getInstance()->connection, $query, $params);
+        $resource = \pg_query_params($instance->connection, $query, $params);
         if (!$resource) return [];
         $rows = \pg_fetch_all($resource, $result_type);
 
@@ -76,23 +74,16 @@ class Postgres
 
     public static function insert(string $table_name, array $dataAssocArray, string $pk = 'id'): int
     {
-        if (!self::getInstance()->isConnected()) return 0;
+        $instance = self::getInstance();
+        if ($instance->connection === false) return 0;
 
-        $columns = '';
-        $params = '';
-        $index = 1;
-
-        foreach ($dataAssocArray as $key => $column) {
-            $columns .= $key . ',';
-            $params .= '$' . $index . ',';
-            $index++;
-        }
-
-        $columns = substr($columns, 0, strlen($columns) - 1);
-        $params = substr($params, 0, strlen($params) - 1);
+        $columns = implode(', ', array_keys($dataAssocArray));
+        
+        $placeholders = array_map(function($i) { return '$' . $i; }, range(1, count($dataAssocArray)));
+        $params = implode(', ', $placeholders);
 
         $sql = sprintf('INSERT INTO %s (%s) VALUES(%s) RETURNING ' . $pk . ';', $table_name, $columns, $params);
-        $result = \pg_query_params(self::getInstance()->connection, $sql, array_values($dataAssocArray));
+        $result = \pg_query_params($instance->connection, $sql, array_values($dataAssocArray));
         if (!$result)
             return 0;
 
@@ -107,15 +98,19 @@ class Postgres
 
     public static function update(string $table_name, array $dataAssocArray, array $conditionAssocArray): bool
     {
-        if (!self::getInstance()->isConnected()) return false;
-        $result = \pg_update(self::getInstance()->connection, $table_name, $dataAssocArray, $conditionAssocArray);
+        $instance = self::getInstance();
+        if ($instance->connection === false) return false;
+        
+        $result = \pg_update($instance->connection, $table_name, $dataAssocArray, $conditionAssocArray);
         return $result === true;
     }
 
     public static function delete(string $table_name, array $dataAssocArray): bool
     {
-        if (!self::getInstance()->isConnected()) return false;
-        $result = \pg_delete(self::getInstance()->connection, $table_name, $dataAssocArray);
+        $instance = self::getInstance();
+        if ($instance->connection === false) return false;
+        
+        $result = \pg_delete($instance->connection, $table_name, $dataAssocArray);
         return $result === true;
     }
 
