@@ -141,6 +141,13 @@ abstract class Model
         return $rows ? $rows[0] : [];
     }
 
+    public function findAndDeleted($value, string $column = 'id'): array
+    {
+        $query = sprintf('SELECT * FROM %s WHERE %s=$1;', $this->TABLE_NAME, $column);
+        $rows = Postgres::fetchAllParams($query, [$value]);
+        return $rows ? $rows[0] : [];
+    }
+
     public function findAll(): array
     {
         $query = sprintf('SELECT * FROM %s ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
@@ -149,6 +156,12 @@ abstract class Model
             $query = sprintf('SELECT * FROM %s WHERE soft_delete is false ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
         }
 
+        return Postgres::fetchAll($query);
+    }
+
+    public function findAllAndDeleted(): array
+    {
+        $query = sprintf('SELECT * FROM %s ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
         return Postgres::fetchAll($query);
     }
 
