@@ -6,7 +6,7 @@ A lightweight native PHP package for interacting with PostgreSQL databases. It p
 
 - **Environment Configuration**: `Dotenv` class to securely load database credentials (`DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`) from `.env` files or environment variables.
 - **PostgreSQL Connection Wrapper**: `Postgres` singleton class providing static methods for queries, inserts, updates, deletes, and fetch operations using associative arrays.
-- **Active Record Base Model**: Abstract `Model` class that simplifies CRUD operations, supporting soft deletes, state management (`EDITABLE`), and standardized response formats.
+- **Active Record Base Model**: Abstract `Model` class that simplifies CRUD operations, supporting soft deletes, state management (`EDITABLE`), and standardized response formats. `find()`, `findAll()`, and `delete()` are unified — their behavior adapts based on the `SOFT_DELETE` flag.
 - **Data Type Casting**: `DataType` constants for mapping request payloads to specific data types (int, float, string, boolean, utf-8, etc.).
 
 ## Architecture

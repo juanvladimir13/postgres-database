@@ -20,7 +20,7 @@ PGDatabase\
 ├── Dotenv       — static `connection_string_pg()`; loads from getenv() or ../.env or ./.env
 ├── Postgres     — singleton, methods are static; wraps pg_connect/pg_query/pg_update/pg_delete/pg_query_params
 └── Models\
-    ├── Model    — abstract; uses $this->id !== 0 to decide insert vs update
+    ├── Model    — abstract; uses `$this->id !== 0` to decide insert vs update
     └── DataType — constants only
 ```
 
@@ -28,7 +28,8 @@ PGDatabase\
 
 - **`Model::extractDataValues`** uses PHP 8.0 `match()` — but `composer.json` claims `^7.4|^8.3`. Building for PHP 7.4 will fail.
 - **`DataType::DATE/DATETIME/ARRAY/JSON/OBJECT`** are defined but **not handled** in `extractDataValues` — they fall through to `(string)$rawValue`.
-- **`Model::buildConditions()`** auto-appends `soft_delete=false` and `editable=true` to WHERE conditions. All `update()`, `save()`, `saveById()`, `updateAndFind()` calls get these appended silently.
+- **`Model::buildConditions()`** (`private`) auto-appends `soft_delete=false` and `editable=true` to WHERE conditions. All `update()`, `save()`, `saveById()`, `updateAndFind()` calls get these appended silently.
+- **`Model::find()` / `findAll()` / `delete()`** are unified — when `SOFT_DELETE` is false they run plain queries (no soft_delete filter); when true they filter. The separate `findHard`/`findAllHard`/`hardDelete`/`saveHard` methods were removed.
 - **`pg_update()` / `pg_delete()`** (native PHP functions) are used instead of raw SQL for `Postgres::update()` and `Postgres::delete()`.
 - **`Postgres::close()`** does not reset the singleton — subsequent calls operate on a closed connection.
 - **PHPStan config** sets `phpVersion: 70100` and `reportUnmatchedIgnoredErrors: false`; ignores a block of "no value type in iterable array" and "never read, only written" errors.
