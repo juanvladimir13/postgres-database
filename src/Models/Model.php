@@ -15,7 +15,6 @@ abstract class Model
 {
     protected string $TABLE_NAME = '';
     protected string $ORDER_BY_COLUMNS = 'id';
-
     protected bool $EDITABLE = false;
     protected bool $SOFT_DELETE = false;
     private array $values = [];
@@ -36,7 +35,7 @@ abstract class Model
         $this->values = $values;
     }
 
-    protected function buildConditions(array $conditions = []): array
+    private function buildConditions(array $conditions = []): array
     {
         if ($this->SOFT_DELETE) {
             $conditions['soft_delete'] = false;
@@ -49,23 +48,17 @@ abstract class Model
         return $conditions;
     }
 
-    protected function getRecordAfterSave($id, string $column = 'id'): array
-    {
-        $data = $this->SOFT_DELETE ? $this->find($id, $column) : $this->findHard($id, $column);
-        return $data ?: ['error' => Postgres::getError()];
-    }
-
     public function save(): array
     {
         $rowsValues = $this->getValues() ?: $this->getData();
 
         if ($this->id !== 0) {
             $sw = Postgres::update($this->TABLE_NAME, $rowsValues, $this->buildConditions(['id' => $this->id]));
-            return $sw ? $this->getRecordAfterSave($this->id) : ['error' => Postgres::getError()];
+            return $sw ? $this->find($this->id) : ['error' => Postgres::getError()];
         }
 
-        $id = Postgres::insert($this->TABLE_NAME, $rowsValues);
-        return $id !== 0 ? $this->getRecordAfterSave($id) : ['error' => Postgres::getError()];
+        $idProccess = Postgres::insert($this->TABLE_NAME, $rowsValues);
+        return $idProccess !== 0 ? $this->find($idProccess) : ['error' => Postgres::getError()];
     }
 
     public function saveById(int $id, string $columnName, array $values = []): array
@@ -74,30 +67,17 @@ abstract class Model
 
         if ($id !== 0) {
             $sw = Postgres::update($this->TABLE_NAME, $rowsValues, $this->buildConditions([$columnName => $id]));
-            return $sw ? $this->getRecordAfterSave($id, $columnName) : ['error' => Postgres::getError()];
+            return $sw ? $this->find($id, $columnName) : ['error' => Postgres::getError()];
         }
 
         $idProccess = Postgres::insert($this->TABLE_NAME, $rowsValues);
-        return $idProccess !== 0 ? $this->getRecordAfterSave($idProccess, $columnName) : ['error' => Postgres::getError()];
-    }
-
-    public function saveHard(): array
-    {
-        $rowsValues = $this->getValues() ?: $this->getData();
-
-        if ($this->id !== 0) {
-            $sw = Postgres::update($this->TABLE_NAME, $rowsValues, ['id' => $this->id]);
-            return $sw ? $this->findHard($this->id) : ['error' => Postgres::getError()];
-        }
-
-        $id = Postgres::insert($this->TABLE_NAME, $rowsValues);
-        return $id !== 0 ? $this->findHard($id) : ['error' => Postgres::getError()];
+        return $idProccess !== 0 ? $this->find($idProccess, $columnName) : ['error' => Postgres::getError()];
     }
 
     public function updateAndFind(array $setValues, array $whereValues, $findValueId, string $findColumnName = 'id'): array
     {
         $sw = Postgres::update($this->TABLE_NAME, $setValues, $this->buildConditions($whereValues));
-        return $sw ? $this->getRecordAfterSave($findValueId, $findColumnName) : ['error' => Postgres::getError()];
+        return $sw ? $this->find($findValueId, $findColumnName) : ['error' => Postgres::getError()];
     }
 
     public function update(array $setValues, array $whereValues): bool
@@ -144,49 +124,31 @@ abstract class Model
 
     public function delete(int $id): bool
     {
-        if (!$this->SOFT_DELETE) {
-            return false;
-        }
-
-        return Postgres::update($this->TABLE_NAME, ['soft_delete' => true], ['id' => $id, 'soft_delete' => false]);
-    }
-
-    public function hardDelete(int $id): bool
-    {
-        return Postgres::delete($this->TABLE_NAME, ['id' => $id]);
+        return $this->SOFT_DELETE ?
+        Postgres::update($this->TABLE_NAME, ['soft_delete' => true], ['id' => $id, 'soft_delete' => false]):
+        Postgres::delete($this->TABLE_NAME, ['id' => $id]);
     }
 
     public function find($value, string $column = 'id'): array
     {
-        if (!$this->SOFT_DELETE) {
-            return [];
+        $query = sprintf('SELECT * FROM %s WHERE %s=$1;', $this->TABLE_NAME, $column);
+
+        if ($this->SOFT_DELETE) {
+            $query = sprintf('SELECT * FROM %s WHERE %s=$1 and soft_delete is false;', $this->TABLE_NAME, $column);
         }
 
-        $query = sprintf('SELECT * FROM %s WHERE %s=$1 and soft_delete is false;', $this->TABLE_NAME, $column);
-        $rows = Postgres::fetchAllParams($query, [$value]);
-        return $rows ? $rows[0] : [];
-    }
-
-    public function findHard($value, string $column = 'id'): array
-    {
-        $query = sprintf('SELECT * FROM %s WHERE %s=$1;', $this->TABLE_NAME, $column);
         $rows = Postgres::fetchAllParams($query, [$value]);
         return $rows ? $rows[0] : [];
     }
 
     public function findAll(): array
     {
-        if (!$this->SOFT_DELETE) {
-            return [];
+        $query = sprintf('SELECT * FROM %s ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
+
+        if ($this->SOFT_DELETE) {
+            $query = sprintf('SELECT * FROM %s WHERE soft_delete is false ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
         }
 
-        $query = sprintf('SELECT * FROM %s WHERE soft_delete is false ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
-        return Postgres::fetchAll($query);
-    }
-
-    public function findAllHard(): array
-    {
-        $query = sprintf('SELECT * FROM %s ORDER BY %s;', $this->TABLE_NAME, $this->ORDER_BY_COLUMNS);
         return Postgres::fetchAll($query);
     }
 
